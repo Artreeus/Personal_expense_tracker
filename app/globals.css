@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide Clerk branding */
+.cl-footer,
+.cl-footerPages,
+[data-localization-key*="footer"],
+div[class*="cl-footer"],
+span[class*="cl-footer"],
+p[class*="cl-footer"] {
+  display: none !important;
+}
+
+/* Hide Clerk logo */
+.cl-logoBox,
+.cl-logoImage,
+[data-localization-key*="logo"],
+div[class*="cl-logo"] {
+  display: none !important;
+}
+
+/* Hide "Powered by Clerk" text */
+*[class*="poweredBy"],
+*[class*="powered-by"],
+*:contains("Powered by Clerk") {
+  display: none !important;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
