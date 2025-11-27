@@ -6,7 +6,7 @@ import Budget from '@/lib/models/Budget';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -23,6 +23,7 @@ export async function PATCH(
     }
 
     await connectDB();
+    const { id } = await params;
 
     const body = await req.json();
     const { amount } = body;
@@ -45,7 +46,7 @@ export async function PATCH(
     }
 
     const budget = await Budget.findOneAndUpdate(
-      { _id: params.id, user_id: mongoUserId },
+      { _id: id, user_id: mongoUserId },
       updates,
       { new: true }
     )
@@ -59,12 +60,18 @@ export async function PATCH(
       );
     }
 
+    const category = budget.category_id && typeof budget.category_id === 'object' && '_id' in budget.category_id ? {
+      id: (budget.category_id as any)._id.toString(),
+      name: (budget.category_id as any).name,
+      color: (budget.category_id as any).color,
+    } : null;
+
     return NextResponse.json({
       budget: {
         id: budget._id.toString(),
-        category_id: budget.category_id?._id?.toString() || budget.category_id,
-        category: budget.category_id?.name || 'Unknown',
-        color: budget.category_id?.color || '#3b82f6',
+        category_id: category?.id || (typeof budget.category_id === 'string' ? budget.category_id : null),
+        category: category?.name || 'Unknown',
+        color: category?.color || '#3b82f6',
         amount: budget.amount,
         month: budget.month,
         created_at: budget.createdAt,
@@ -82,7 +89,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -99,9 +106,10 @@ export async function DELETE(
     }
 
     await connectDB();
+    const { id } = await params;
 
     const result = await Budget.deleteOne({
-      _id: params.id,
+      _id: id,
       user_id: mongoUserId,
     });
 

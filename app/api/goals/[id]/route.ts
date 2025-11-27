@@ -6,7 +6,7 @@ import Goal from '@/lib/models/Goal';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -23,6 +23,7 @@ export async function PATCH(
     }
 
     await connectDB();
+    const { id } = await params;
 
     const body = await req.json();
     const { name, target_amount, current_amount, category, deadline, color } = body;
@@ -59,7 +60,7 @@ export async function PATCH(
     }
 
     const goal = await Goal.findOneAndUpdate(
-      { _id: params.id, user_id: mongoUserId },
+      { _id: id, user_id: mongoUserId },
       updates,
       { new: true }
     ).lean();
@@ -100,7 +101,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -117,9 +118,10 @@ export async function DELETE(
     }
 
     await connectDB();
+    const { id } = await params;
 
     const result = await Goal.deleteOne({
-      _id: params.id,
+      _id: id,
       user_id: mongoUserId,
     });
 

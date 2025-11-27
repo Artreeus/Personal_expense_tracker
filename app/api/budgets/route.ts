@@ -141,12 +141,20 @@ export async function POST(req: NextRequest) {
       .populate('category_id', 'name color')
       .lean();
 
+    const populatedCategory = populatedBudget?.category_id && typeof populatedBudget.category_id === 'object' && '_id' in populatedBudget.category_id
+      ? {
+          id: (populatedBudget.category_id as any)._id.toString(),
+          name: (populatedBudget.category_id as any).name,
+          color: (populatedBudget.category_id as any).color,
+        }
+      : null;
+
     return NextResponse.json({
       budget: {
         id: budget._id.toString(),
-        category_id: populatedBudget?.category_id?._id?.toString() || category_id,
-        category: populatedBudget?.category_id?.name || category.name,
-        color: populatedBudget?.category_id?.color || category.color,
+        category_id: populatedCategory?.id || category_id,
+        category: populatedCategory?.name || category.name,
+        color: populatedCategory?.color || category.color,
         amount: budget.amount,
         month: budget.month,
         spent: 0,

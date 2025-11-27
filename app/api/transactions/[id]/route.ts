@@ -6,7 +6,7 @@ import Transaction from '@/lib/models/Transaction';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -23,9 +23,10 @@ export async function GET(
     }
 
     await connectDB();
+    const { id } = await params;
 
     const transaction = await Transaction.findOne({
-      _id: params.id,
+      _id: id,
       user_id: mongoUserId,
     })
       .populate('category_id', 'name type icon color')
@@ -71,7 +72,7 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -106,8 +107,9 @@ export async function PATCH(
       );
     }
 
+    const { id } = await params;
     const transaction = await Transaction.findOneAndUpdate(
-      { _id: params.id, user_id: mongoUserId },
+      { _id: id, user_id: mongoUserId },
       updates,
       { new: true }
     )
@@ -154,7 +156,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -172,8 +174,9 @@ export async function DELETE(
 
     await connectDB();
 
+    const { id } = await params;
     const result = await Transaction.deleteOne({
-      _id: params.id,
+      _id: id,
       user_id: mongoUserId,
     });
 

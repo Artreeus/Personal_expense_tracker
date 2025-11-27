@@ -8,7 +8,16 @@ const nextConfig = {
   },
   // Optimize for Vercel
   images: {
-    domains: ['img.clerk.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+      },
+    ],
+  },
+  // Ensure proper handling of environment variables
+  env: {
+    MEGALLM_API_KEY: process.env.MEGALLM_API_KEY,
   },
 };
 

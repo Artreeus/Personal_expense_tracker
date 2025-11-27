@@ -1,8 +1,16 @@
 import OpenAI from 'openai';
 
+// Initialize client with fallback API key
+const getApiKey = () => {
+  if (typeof process !== 'undefined' && process.env?.MEGALLM_API_KEY) {
+    return process.env.MEGALLM_API_KEY;
+  }
+  return 'sk-mega-82dcae99f7fb70d409af11fde3f898c2ddce2338dd31ee8a4433c1a4c7d2a565';
+};
+
 const client = new OpenAI({
   baseURL: 'https://ai.megallm.io/v1',
-  apiKey: process.env.MEGALLM_API_KEY || 'sk-mega-82dcae99f7fb70d409af11fde3f898c2ddce2338dd31ee8a4433c1a4c7d2a565',
+  apiKey: getApiKey(),
 });
 
 export interface MonthlyFinancialData {
