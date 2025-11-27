@@ -1,0 +1,103 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import connectDB from '@/lib/mongodb';
+import Category from '@/lib/models/Category';
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await connectDB();
+
+    const body = await req.json();
+    const { name, type, icon, color } = body;
+
+    const updates: any = {};
+    if (name !== undefined) updates.name = name;
+    if (type !== undefined) updates.type = type;
+    if (icon !== undefined) updates.icon = icon;
+    if (color !== undefined) updates.color = color;
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json(
+        { error: 'No fields to update' },
+        { status: 400 }
+      );
+    }
+
+    const category = await Category.findOneAndUpdate(
+      { _id: params.id, user_id: session.user.id },
+      updates,
+      { new: true }
+    ).lean();
+
+    if (!category) {
+      return NextResponse.json(
+        { error: 'Category not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      category: {
+        id: category._id.toString(),
+        user_id: category.user_id,
+        name: category.name,
+        type: category.type,
+        icon: category.icon,
+        color: category.color,
+        created_at: category.createdAt,
+        updated_at: category.updatedAt,
+      }
+    });
+  } catch (error) {
+    console.error('Update category error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await connectDB();
+
+    const result = await Category.deleteOne({
+      _id: params.id,
+      user_id: session.user.id,
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { error: 'Category not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Delete category error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
