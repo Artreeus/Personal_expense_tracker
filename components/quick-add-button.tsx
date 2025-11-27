@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ButtonLoader } from '@/components/ui/loader';
@@ -14,7 +14,7 @@ import { Category } from '@/lib/types';
 import { ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 
 export function QuickAddButton() {
-  const { data: session } = useSession();
+  const { isSignedIn } = useUser();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +52,7 @@ export function QuickAddButton() {
   };
 
   const handleOpen = () => {
-    if (!session) return;
+    if (!isSignedIn) return;
     setIsOpen(true);
     fetchCategories();
     // Auto-focus amount input after dialog opens
@@ -78,7 +78,7 @@ export function QuickAddButton() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [session, isOpen]);
+  }, [isSignedIn, isOpen]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -155,7 +155,7 @@ export function QuickAddButton() {
     ? [...recentCategories, ...filteredCategories.filter(c => !recentCategories.find(rc => rc.id === c.id))]
     : filteredCategories;
 
-  if (!session) return null;
+  if (!isSignedIn) return null;
 
   return (
     <>

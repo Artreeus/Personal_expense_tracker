@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Category } from '@/lib/types';
 import { ArrowUpCircle, ArrowDownCircle, X } from 'lucide-react';
 
 export default function QuickAddPage() {
-  const { data: session, status } = useSession();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -25,14 +25,14 @@ export default function QuickAddPage() {
   });
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !isSignedIn) {
       router.push('/auth/signin');
     }
-    if (status === 'authenticated') {
+    if (isLoaded && isSignedIn) {
       fetchCategories();
       setTimeout(() => amountInputRef.current?.focus(), 100);
     }
-  }, [status, router]);
+  }, [isLoaded, isSignedIn, router]);
 
   const fetchCategories = async () => {
     try {
@@ -105,7 +105,7 @@ export default function QuickAddPage() {
   const quickAmounts = [10, 20, 50, 100, 200, 500];
   const filteredCategories = categories.filter((cat) => cat.type === formData.type);
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 

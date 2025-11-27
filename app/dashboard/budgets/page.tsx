@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,7 +18,7 @@ import { Category } from '@/lib/types';
 import { ButtonLoader } from '@/components/ui/loader';
 
 export default function BudgetsPage() {
-  const { status } = useSession();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [budgets, setBudgets] = useState<any[]>([]);
@@ -39,14 +39,14 @@ export default function BudgetsPage() {
   });
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !isSignedIn) {
       router.push('/auth/signin');
     }
-    if (status === 'authenticated') {
+    if (isLoaded && isSignedIn) {
       fetchCategories();
       fetchBudgets();
     }
-  }, [status, router, selectedMonth]);
+  }, [isLoaded, isSignedIn, router, selectedMonth]);
 
   const fetchCategories = async () => {
     try {
@@ -230,7 +230,7 @@ export default function BudgetsPage() {
     return options;
   };
 
-  if (status === 'loading' || isLoading) {
+  if (!isLoaded || isLoading) {
     return (
       <DashboardLayout>
         <div className="space-y-6">

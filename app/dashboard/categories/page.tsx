@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +15,7 @@ import { Plus, Trash2, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CategoriesPage() {
-  const { status } = useSession();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,14 +29,14 @@ export default function CategoriesPage() {
   });
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !isSignedIn) {
       router.push('/auth/signin');
     }
 
-    if (status === 'authenticated') {
+    if (isLoaded && isSignedIn) {
       fetchCategories();
     }
-  }, [status]);
+  }, [isLoaded, isSignedIn, router]);
 
   const fetchCategories = async () => {
     try {
@@ -121,7 +121,7 @@ export default function CategoriesPage() {
   const incomeCategories = categories.filter((c) => c.type === 'income');
   const expenseCategories = categories.filter((c) => c.type === 'expense');
 
-  if (status === 'loading' || isLoading) {
+  if (!isLoaded || isLoading) {
     return <DashboardLayout><div>Loading...</div></DashboardLayout>;
   }
 

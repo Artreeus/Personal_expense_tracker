@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
@@ -13,21 +13,23 @@ import { LogOut, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 export default function SettingsPage() {
-  const { data: session, status } = useSession();
+  const { isLoaded, isSignedIn, user } = useUser();
+  const { signOut } = useClerk();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !isSignedIn) {
       router.push('/auth/signin');
     }
-  }, [status]);
+  }, [isLoaded, isSignedIn, router]);
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOut();
+    router.push('/');
   };
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return <DashboardLayout><div>Loading...</div></DashboardLayout>;
   }
 
@@ -47,14 +49,14 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={session?.user?.image || ''} />
+                <AvatarImage src={user?.imageUrl || ''} />
                 <AvatarFallback>
-                  {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
+                  {user?.fullName?.charAt(0).toUpperCase() || user?.firstName?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium text-lg">{session?.user?.name || 'User'}</p>
-                <p className="text-sm text-muted-foreground">{session?.user?.email}</p>
+                <p className="font-medium text-lg">{user?.fullName || user?.firstName || 'User'}</p>
+                <p className="text-sm text-muted-foreground">{user?.primaryEmailAddress?.emailAddress}</p>
               </div>
             </div>
           </CardContent>
@@ -110,11 +112,11 @@ export default function SettingsPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Framework</span>
-              <span className="text-sm font-medium">Next.js 13</span>
+              <span className="text-sm font-medium">Next.js 15</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Database</span>
-              <span className="text-sm font-medium">Supabase</span>
+              <span className="text-sm font-medium">MongoDB</span>
             </div>
           </CardContent>
         </Card>

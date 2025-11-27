@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getMongoUserIdFromClerk } from '@/lib/clerk-helpers';
 import connectDB from '@/lib/mongodb';
 import Transaction from '@/lib/models/Transaction';
 
@@ -9,17 +9,22 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const mongoUserId = await getMongoUserIdFromClerk();
+    if (!mongoUserId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     await connectDB();
 
     const transaction = await Transaction.findOne({
       _id: params.id,
-      user_id: session.user.id,
+      user_id: mongoUserId,
     })
       .populate('category_id', 'name type icon color')
       .lean();
@@ -67,10 +72,15 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const mongoUserId = await getMongoUserIdFromClerk();
+    if (!mongoUserId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     await connectDB();
@@ -93,7 +103,7 @@ export async function PATCH(
     }
 
     const transaction = await Transaction.findOneAndUpdate(
-      { _id: params.id, user_id: session.user.id },
+      { _id: params.id, user_id: mongoUserId },
       updates,
       { new: true }
     )
@@ -143,17 +153,22 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const mongoUserId = await getMongoUserIdFromClerk();
+    if (!mongoUserId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     await connectDB();
 
     const result = await Transaction.deleteOne({
       _id: params.id,
-      user_id: session.user.id,
+      user_id: mongoUserId,
     });
 
     if (result.deletedCount === 0) {

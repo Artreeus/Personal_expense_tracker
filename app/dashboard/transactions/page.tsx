@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { InlineLoader, ButtonLoader } from '@/components/ui/loader';
 
 export default function TransactionsPage() {
-  const { status } = useSession();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -25,14 +25,14 @@ export default function TransactionsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !isSignedIn) {
       router.push('/auth/signin');
     }
 
-    if (status === 'authenticated') {
+    if (isLoaded && isSignedIn) {
       fetchData();
     }
-  }, [status]);
+  }, [isLoaded, isSignedIn, router]);
 
   const fetchData = async () => {
     try {
@@ -93,7 +93,7 @@ export default function TransactionsPage() {
     return matchesSearch && matchesType && matchesCategory;
   });
 
-  if (status === 'loading' || isLoading) {
+  if (!isLoaded || isLoading) {
     return <DashboardLayout><div>Loading...</div></DashboardLayout>;
   }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getMongoUserIdFromClerk } from '@/lib/clerk-helpers';
 import connectDB from '@/lib/mongodb';
 import Budget from '@/lib/models/Budget';
 import Category from '@/lib/models/Category';
@@ -8,10 +8,15 @@ import Transaction from '@/lib/models/Transaction';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const mongoUserId = await getMongoUserIdFromClerk();
+    if (!mongoUserId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     await connectDB();
@@ -20,7 +25,7 @@ export async function GET(req: NextRequest) {
     const month = searchParams.get('month') || new Date().toISOString().slice(0, 7);
 
     const budgets = await Budget.find({
-      user_id: session.user.id,
+      user_id: mongoUserId,
       month,
     })
       .populate('category_id', 'name color')
@@ -32,7 +37,7 @@ export async function GET(req: NextRequest) {
     lastDayOfMonth.setHours(23, 59, 59, 999);
 
     const transactions = await Transaction.find({
-      user_id: session.user.id,
+      user_id: mongoUserId,
       type: 'expense',
       transaction_date: {
         $gte: firstDayOfMonth,
@@ -77,10 +82,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const mongoUserId = await getMongoUserIdFromClerk();
+    if (!mongoUserId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     await connectDB();
@@ -105,7 +115,7 @@ export async function POST(req: NextRequest) {
     // Verify category belongs to user
     const category = await Category.findOne({
       _id: category_id,
-      user_id: session.user.id,
+      user_id: mongoUserId,
       type: 'expense',
     });
 
@@ -117,7 +127,7 @@ export async function POST(req: NextRequest) {
     }
 
     const budget = await Budget.create({
-      user_id: session.user.id,
+      user_id: mongoUserId,
       category_id,
       amount: parseFloat(amount),
       month,

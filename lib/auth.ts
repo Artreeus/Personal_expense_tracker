@@ -1,6 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
+// import GoogleProvider from 'next-auth/providers/google';
 import { compare } from 'bcryptjs';
 import connectDB from './mongodb';
 import User from './models/User';
@@ -10,10 +10,10 @@ import UserSubscription from './models/UserSubscription';
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    }),
+    // GoogleProvider({
+    //   clientId: process.env.GOOGLE_CLIENT_ID || '',
+    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    // }),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -55,52 +55,53 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === 'google') {
-        try {
-          await connectDB();
-        } catch (error) {
-          console.error('Database connection error in signIn:', error);
-          return false;
-        }
+      // Google provider removed - only credentials login is available
+      // if (account?.provider === 'google') {
+      //   try {
+      //     await connectDB();
+      //   } catch (error) {
+      //     console.error('Database connection error in signIn:', error);
+      //     return false;
+      //   }
 
-        const existingUser = await User.findOne({ email: user.email!.toLowerCase() });
+      //   const existingUser = await User.findOne({ email: user.email!.toLowerCase() });
 
-        if (!existingUser) {
-          const newUser = await User.create({
-            email: user.email!.toLowerCase(),
-            name: user.name,
-            image: user.image,
-            email_verified: new Date(),
-          });
+      //   if (!existingUser) {
+      //     const newUser = await User.create({
+      //       email: user.email!.toLowerCase(),
+      //       name: user.name,
+      //       image: user.image,
+      //       email_verified: new Date(),
+      //     });
 
-          user.id = newUser._id.toString();
+      //     user.id = newUser._id.toString();
 
-          await Account.create({
-            user_id: newUser._id.toString(),
-            type: account.type,
-            provider: account.provider,
-            provider_account_id: account.providerAccountId,
-            access_token: account.access_token,
-            refresh_token: account.refresh_token,
-            expires_at: account.expires_at,
-            token_type: account.token_type,
-            scope: account.scope,
-            id_token: account.id_token,
-          });
+      //     await Account.create({
+      //       user_id: newUser._id.toString(),
+      //       type: account.type,
+      //       provider: account.provider,
+      //       provider_account_id: account.providerAccountId,
+      //       access_token: account.access_token,
+      //       refresh_token: account.refresh_token,
+      //       expires_at: account.expires_at,
+      //       token_type: account.token_type,
+      //       scope: account.scope,
+      //       id_token: account.id_token,
+      //     });
 
-          const freePlan = await SubscriptionPlan.findOne({ name: 'Free' });
+      //     const freePlan = await SubscriptionPlan.findOne({ name: 'Free' });
 
-          if (freePlan) {
-            await UserSubscription.create({
-              user_id: newUser._id.toString(),
-              plan_id: freePlan._id.toString(),
-              status: 'active',
-            });
-          }
-        } else {
-          user.id = existingUser._id.toString();
-        }
-      }
+      //     if (freePlan) {
+      //       await UserSubscription.create({
+      //         user_id: newUser._id.toString(),
+      //         plan_id: freePlan._id.toString(),
+      //         status: 'active',
+      //       });
+      //     }
+      //   } else {
+      //     user.id = existingUser._id.toString();
+      //   }
+      // }
 
       return true;
     },

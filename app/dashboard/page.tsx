@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { redirect, useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,7 +13,7 @@ import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import { Transaction } from '@/lib/types';
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const [stats, setStats] = useState<any>(null);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
@@ -22,14 +22,14 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      redirect('/auth/signin');
+    if (isLoaded && !isSignedIn) {
+      router.push('/auth/signin');
     }
 
-    if (status === 'authenticated') {
+    if (isLoaded && isSignedIn) {
       fetchDashboardData();
     }
-  }, [status]);
+  }, [isLoaded, isSignedIn, router]);
 
   const fetchDashboardData = async () => {
     try {
@@ -95,7 +95,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (status === 'loading' || isLoading) {
+  if (!isLoaded || isLoading) {
     return (
       <DashboardLayout>
         <div className="space-y-6">
@@ -118,7 +118,7 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, {session?.user?.name || 'User'}!</p>
+            <p className="text-muted-foreground">Welcome back!</p>
           </div>
           <Button 
             onClick={() => router.push('/dashboard/add')}

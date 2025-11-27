@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getMongoUserIdFromClerk } from '@/lib/clerk-helpers';
 import connectDB from '@/lib/mongodb';
 import Transaction from '@/lib/models/Transaction';
 
@@ -8,10 +8,15 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const mongoUserId = await getMongoUserIdFromClerk();
+    if (!mongoUserId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     await connectDB();
@@ -33,7 +38,7 @@ export async function GET(req: NextRequest) {
     endDate.setHours(23, 59, 59, 999);
 
     const transactions = await Transaction.find({
-      user_id: session.user.id,
+      user_id: mongoUserId,
       transaction_date: {
         $gte: startDate,
         $lte: endDate,

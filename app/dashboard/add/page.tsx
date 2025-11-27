@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +16,7 @@ import { ArrowUpCircle, ArrowDownCircle, Repeat, Clock } from 'lucide-react';
 import { ButtonLoader, InlineLoader } from '@/components/ui/loader';
 
 export default function AddTransactionPage() {
-  const { data: session, status } = useSession();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -34,19 +34,19 @@ export default function AddTransactionPage() {
   });
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !isSignedIn) {
       router.push('/auth/signin');
     }
 
-    if (status === 'authenticated') {
+    if (isLoaded && isSignedIn) {
       fetchCategories();
       fetchRecentTransactions();
     }
-  }, [status, router]);
+  }, [isLoaded, isSignedIn, router]);
 
   useEffect(() => {
     // Auto-focus amount input when page loads
-    if (amountInputRef.current && status === 'authenticated') {
+    if (amountInputRef.current && isLoaded && isSignedIn) {
       setTimeout(() => amountInputRef.current?.focus(), 100);
     }
 
@@ -67,7 +67,7 @@ export default function AddTransactionPage() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [status, router]);
+  }, [isLoaded, isSignedIn, router]);
 
   const fetchCategories = async () => {
     try {
@@ -191,7 +191,7 @@ export default function AddTransactionPage() {
     ? [...recentCategories, ...filteredCategories.filter(c => !recentCategories.find(rc => rc.id === c.id))]
     : filteredCategories;
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return (
       <DashboardLayout>
         <InlineLoader text="Loading transaction form..." />

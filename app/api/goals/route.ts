@@ -1,21 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getMongoUserIdFromClerk } from '@/lib/clerk-helpers';
 import connectDB from '@/lib/mongodb';
 import Goal from '@/lib/models/Goal';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const mongoUserId = await getMongoUserIdFromClerk();
+    if (!mongoUserId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     await connectDB();
 
     const goals = await Goal.find({
-      user_id: session.user.id,
+      user_id: mongoUserId,
     })
       .sort({ createdAt: -1 })
       .lean();
@@ -51,10 +56,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const mongoUserId = await getMongoUserIdFromClerk();
+    if (!mongoUserId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     await connectDB();
@@ -77,7 +87,7 @@ export async function POST(req: NextRequest) {
     }
 
     const goal = await Goal.create({
-      user_id: session.user.id,
+      user_id: mongoUserId,
       name,
       target_amount: parseFloat(target_amount),
       current_amount: parseFloat(current_amount || 0),

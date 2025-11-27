@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -16,7 +16,7 @@ import { Target, Plus, TrendingUp, Sparkles, Trash2, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function GoalsPage() {
-  const { status } = useSession();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [goals, setGoals] = useState<any[]>([]);
@@ -35,13 +35,13 @@ export default function GoalsPage() {
   });
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !isSignedIn) {
       router.push('/auth/signin');
     }
-    if (status === 'authenticated') {
+    if (isLoaded && isSignedIn) {
       fetchGoals();
     }
-  }, [status, router]);
+  }, [isLoaded, isSignedIn, router]);
 
   const fetchGoals = async () => {
     try {
@@ -208,7 +208,7 @@ export default function GoalsPage() {
   const activeGoals = goals.filter((g) => g.percentage < 100).length;
   const completedGoals = goals.filter((g) => g.percentage >= 100).length;
 
-  if (status === 'loading' || isLoading) {
+  if (!isLoaded || isLoading) {
     return (
       <DashboardLayout>
         <div className="space-y-6">

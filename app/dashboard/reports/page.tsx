@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { Download, TrendingUp, TrendingDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ReportsPage() {
-  const { status } = useSession();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [report, setReport] = useState<any>(null);
@@ -22,14 +22,14 @@ export default function ReportsPage() {
   });
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !isSignedIn) {
       router.push('/auth/signin');
     }
 
-    if (status === 'authenticated') {
+    if (isLoaded && isSignedIn) {
       fetchReport();
     }
-  }, [status, selectedMonth]);
+  }, [isLoaded, isSignedIn, selectedMonth, router]);
 
   const fetchReport = async () => {
     setIsLoading(true);
@@ -67,7 +67,7 @@ export default function ReportsPage() {
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e'];
 
-  if (status === 'loading' || isLoading) {
+  if (!isLoaded || isLoading) {
     return <DashboardLayout><div>Loading...</div></DashboardLayout>;
   }
 
