@@ -84,9 +84,43 @@ export async function getMongoUserIdFromClerk() {
 
   try {
     await connectDB();
-    const user = await User.findOne({ clerk_id: clerkUserId });
-    return user?._id.toString() || null;
-  } catch (error) {
+    let user = await User.findOne({ clerk_id: clerkUserId });
+    
+    // If user doesn't exist, try to sync from Clerk
+    if (!user) {
+      try {
+        // Use clerkClient to fetch user data
+        const { clerkClient } = await import('@clerk/nextjs/server');
+        const clerk = clerkClient();
+        const clerkUser = await clerk.users.getUser(clerkUserId);
+        
+        if (clerkUser) {
+          const email = clerkUser.emailAddresses[0]?.emailAddress;
+          const name = clerkUser.firstName && clerkUser.lastName 
+            ? `${clerkUser.firstName} ${clerkUser.lastName}`.trim()
+            : clerkUser.firstName || clerkUser.lastName || undefined;
+          const image = clerkUser.imageUrl;
+          
+          if (email) {
+            const mongoUserId = await syncClerkUserToMongoDB(clerkUserId, email, name, image);
+            return mongoUserId;
+          } else {
+            console.error('No email found for Clerk user:', clerkUserId);
+            return null;
+          }
+        } else {
+          console.error('Clerk user not found:', clerkUserId);
+          return null;
+        }
+      } catch (syncError: any) {
+        console.error('Error syncing user on demand:', syncError);
+        // Return null if sync fails - the webhook should handle it eventually
+        return null;
+      }
+    }
+    
+    return user._id.toString();
+  } catch (error: any) {
     console.error('Error getting MongoDB user ID:', error);
     return null;
   }

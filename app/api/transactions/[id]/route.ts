@@ -17,7 +17,9 @@ export async function GET(
 
     const mongoUserId = await getMongoUserIdFromClerk();
     if (!mongoUserId) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ 
+        error: 'User not found. Please try refreshing the page or contact support if the issue persists.' 
+      }, { status: 404 });
     }
 
     await connectDB();
@@ -80,7 +82,9 @@ export async function PATCH(
 
     const mongoUserId = await getMongoUserIdFromClerk();
     if (!mongoUserId) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ 
+        error: 'User not found. Please try refreshing the page or contact support if the issue persists.' 
+      }, { status: 404 });
     }
 
     await connectDB();
@@ -161,7 +165,9 @@ export async function DELETE(
 
     const mongoUserId = await getMongoUserIdFromClerk();
     if (!mongoUserId) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ 
+        error: 'User not found. Please try refreshing the page or contact support if the issue persists.' 
+      }, { status: 404 });
     }
 
     await connectDB();

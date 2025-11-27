@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { InlineLoader } from '@/components/ui/loader';
-import { ArrowUpCircle, ArrowDownCircle, TrendingUp, Wallet, Plus } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, TrendingUp, Wallet, Plus, Calendar } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Transaction } from '@/lib/types';
 
@@ -20,16 +22,21 @@ export default function DashboardPage() {
   const [trendData, setTrendData] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    return new Date().toISOString().slice(0, 7);
+  });
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push('/auth/signin');
+      return;
     }
 
     if (isLoaded && isSignedIn) {
       fetchDashboardData();
     }
-  }, [isLoaded, isSignedIn, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, isSignedIn, router, selectedMonth]);
 
   const fetchDashboardData = async () => {
     try {
@@ -77,8 +84,7 @@ export default function DashboardPage() {
       const trendResults = await Promise.all(trendPromises);
       setTrendData(trendResults);
 
-      const month = new Date().toISOString().slice(0, 7);
-      const reportRes = await fetch(`/api/reports/monthly?month=${month}`);
+      const reportRes = await fetch(`/api/reports/monthly?month=${selectedMonth}`);
       if (reportRes.ok) {
         const reportData = await reportRes.json();
         setCategoryData(
@@ -206,7 +212,21 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Category Breakdown</CardTitle>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <CardTitle>Category Breakdown</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="month-select" className="text-sm text-muted-foreground">
+                    Month:
+                  </Label>
+                  <Input
+                    id="month-select"
+                    type="month"
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="w-40"
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {categoryData.length > 0 ? (
