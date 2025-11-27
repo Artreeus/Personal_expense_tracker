@@ -19,10 +19,12 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 # Clerk Authentication
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
 CLERK_SECRET_KEY=your-clerk-secret-key
+
+# Clerk Webhook (OPTIONAL - users will sync on-demand if not configured)
 WEBHOOK_SECRET=your-clerk-webhook-secret
 
 # AI Reports (MegaLLM)
-MEGALLM_API_KEY=sk-mega-82dcae99f7fb70d409af11fde3f898c2ddce2338dd31ee8a4433c1a4c7d2a565
+MEGALLM_API_KEY=sk-mega-
 
 # Optional: For auto-generating reports via cron
 CRON_SECRET=your-cron-secret-key-here

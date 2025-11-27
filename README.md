@@ -1,254 +1,156 @@
-# Personal Expense Tracker
+# Finance Tracker - Personal Finance Management SaaS
 
-A modern, full-stack personal finance tracking application built with Next.js 15, TypeScript, MongoDB, and shadcn/ui. Track income and expenses with beautiful analytics and insights.
+A modern, full-featured personal finance management application built with Next.js 15, MongoDB, and Clerk authentication.
 
 ## Features
 
-### Core Functionality
-- **Authentication**: Secure login with email/password and Google OAuth via NextAuth
-- **Transaction Management**: Fast, mobile-optimized income/expense tracking
-- **Smart Categories**: Customizable categories with color coding
-- **Real-time Analytics**: Beautiful charts and visualizations with Recharts
-- **Monthly Reports**: Comprehensive financial summaries with category breakdowns
-- **Budget Tracking**: Automatic budget calculation based on spending patterns
-- **Dark Mode**: Full theme support with next-themes
-- **Responsive Design**: Mobile-first with bottom navigation and desktop sidebar
-
-### Technical Highlights
-- **Multi-tenant Architecture**: Built for SaaS scalability from day one
-- **Type-safe API**: Full TypeScript coverage across frontend and backend
-- **MongoDB Database**: Flexible NoSQL database with Mongoose ODM
-- **Server Components**: Leveraging Next.js 15 App Router for performance
-- **Modern UI**: shadcn/ui components with Tailwind CSS
+- 💰 **Transaction Management**: Track income and expenses with categories
+- 📊 **Dashboard**: Real-time financial overview with charts and trends
+- 🎯 **Budgets**: Set and track monthly budgets by category
+- 🏆 **Goals**: Create and monitor financial goals
+- 📈 **Reports**: Detailed monthly financial reports with visualizations
+- 🤖 **AI Analysis**: AI-powered monthly financial analysis and recommendations
+- 📱 **Responsive Design**: Works seamlessly on desktop and mobile
+- ⚡ **Quick Add**: Fast transaction entry with keyboard shortcuts
+- 🎨 **Modern UI**: Beautiful, intuitive interface with dark mode support
 
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
 - **Database**: MongoDB with Mongoose
-- **Authentication**: NextAuth.js v4
-- **UI Components**: shadcn/ui
-- **Styling**: Tailwind CSS
+- **Authentication**: Clerk
+- **UI**: Tailwind CSS, shadcn/ui, Radix UI
 - **Charts**: Recharts
-- **Icons**: Lucide React
+- **AI**: MegaLLM (OpenAI-compatible API)
+- **Deployment**: Vercel
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ installed
-- MongoDB database (local or Atlas)
+- Node.js 18+ 
+- MongoDB database
+- Clerk account
+- MegaLLM API key (for AI features)
 
 ### Installation
 
-1. Clone the repository
+1. Clone the repository:
 ```bash
-git clone https://github.com/Artreeus/Personal_expense_tracker.git
-cd Personal_expense_tracker
+git clone https://github.com/yourusername/finance-tracker.git
+cd finance-tracker
 ```
 
-2. Install dependencies
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Configure environment variables
-
-Create a `.env` file in the root directory:
-
-```env
-# Database
-DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority"
-
-# NextAuth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key-here
-
-# Google OAuth (optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
+3. Set up environment variables:
+```bash
+cp .env.example .env
 ```
 
-4. Run the development server
+Edit `.env` and add your configuration (see [SETUP.md](./SETUP.md) for details)
+
+4. Run the development server:
 ```bash
 npm run dev
 ```
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-### Database Setup
+## Environment Variables
 
-The application uses MongoDB with the following collections:
-- `users` - User accounts
-- `accounts` - OAuth provider links
-- `categories` - Transaction categories
-- `transactions` - Income/expense records
-- `subscriptionplans` - Available subscription tiers
-- `usersubscriptions` - User subscription status
+See [SETUP.md](./SETUP.md) for complete environment variable configuration.
+
+Required:
+- `DATABASE_URL` - MongoDB connection string
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
+- `CLERK_SECRET_KEY` - Clerk secret key
+- `MEGALLM_API_KEY` - MegaLLM API key for AI features
+
+Optional:
+- `WEBHOOK_SECRET` - Clerk webhook secret (users sync on-demand if not set)
+- `CRON_SECRET` - Secret for cron job authentication
+
+## Deployment
+
+See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for detailed deployment instructions.
+
+Quick deploy to Vercel:
+1. Push code to GitHub
+2. Import project in Vercel
+3. Add environment variables
+4. Deploy!
 
 ## Project Structure
 
 ```
-├── app/
-│   ├── api/              # API routes
-│   │   ├── auth/         # Authentication endpoints
-│   │   ├── transactions/ # Transaction CRUD
-│   │   ├── categories/   # Category management
-│   │   ├── dashboard/    # Dashboard stats
-│   │   └── reports/      # Report generation
-│   ├── auth/             # Auth pages (signin, signup)
-│   ├── dashboard/        # Protected dashboard pages
-│   │   ├── add/         # Add transaction
-│   │   ├── transactions/ # Transaction list
-│   │   ├── categories/  # Category management
-│   │   ├── budgets/     # Budget tracking
-│   │   ├── goals/       # Financial goals
-│   │   ├── reports/     # Monthly reports
-│   │   └── settings/    # User settings
-│   ├── layout.tsx       # Root layout
-│   └── page.tsx         # Landing page
-├── components/
-│   ├── layout/          # Layout components
-│   │   ├── sidebar.tsx
-│   │   ├── mobile-nav.tsx
-│   │   └── dashboard-layout.tsx
-│   ├── ui/              # shadcn/ui components
-│   └── providers.tsx    # Context providers
-├── lib/
-│   ├── models/          # MongoDB models
-│   ├── auth.ts          # NextAuth configuration
-│   ├── mongodb.ts       # MongoDB connection
-│   ├── types.ts         # TypeScript types
-│   └── utils.ts         # Utility functions
-└── types/
-    └── next-auth.d.ts   # NextAuth type extensions
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   ├── auth/              # Authentication pages
+│   ├── dashboard/         # Dashboard pages
+│   └── layout.tsx         # Root layout
+├── components/            # React components
+│   ├── layout/           # Layout components
+│   └── ui/               # UI components
+├── lib/                   # Utilities and services
+│   ├── models/           # MongoDB models
+│   ├── ai-service.ts     # AI report generation
+│   └── clerk-helpers.ts  # Clerk utilities
+└── public/               # Static assets
 ```
 
-## Key Pages
+## Features in Detail
 
-### Landing Page (`/`)
-Minimal landing page with feature highlights and call-to-action buttons.
-
-### Dashboard (`/dashboard`)
-- Today's and monthly income/expense summaries
-- 7-day trend chart
-- Category breakdown pie chart
-- Recent transactions list
-
-### Add Transaction (`/dashboard/add`)
-- Fast mobile-optimized form
-- Type toggle (income/expense)
-- Category selector
-- Date picker
-- Optional notes
-- "Repeat last transaction" shortcut
-
-### Transactions (`/dashboard/transactions`)
-- Full transaction list with filtering
-- Search by note/category
-- Filter by type and category
-- Delete functionality
-
-### Categories (`/dashboard/categories`)
-- Create custom categories
-- Separate income and expense categories
-- Color customization
-- Delete categories
-
-### Budgets (`/dashboard/budgets`)
-- Automatic budget calculation from spending
-- Category-wise budget tracking
-- Visual progress indicators
-- Budget status alerts
-
-### Reports (`/dashboard/reports`)
-- Month selector
-- Income/expense summary
-- Category breakdown bar chart
-- Expense distribution pie chart
-- Detailed transaction breakdown
-
-### Settings (`/dashboard/settings`)
-- User profile display
-- Dark mode toggle
-- Account management
-- Sign out
-
-## API Routes
-
-### Authentication
-- `POST /api/auth/register` - Create new account
-- `POST /api/auth/[...nextauth]` - NextAuth handlers
+### Dashboard
+- Real-time financial statistics
+- 7-day trend charts
+- Category breakdown visualization
+- Recent transactions
 
 ### Transactions
-- `GET /api/transactions` - List transactions (with filters)
-- `POST /api/transactions` - Create transaction
-- `GET /api/transactions/[id]` - Get single transaction
-- `PATCH /api/transactions/[id]` - Update transaction
-- `DELETE /api/transactions/[id]` - Delete transaction
+- Add, edit, delete transactions
+- Filter by type, category, date
+- Search functionality
+- Bulk operations
 
-### Categories
-- `GET /api/categories` - List categories
-- `POST /api/categories` - Create category
-- `PATCH /api/categories/[id]` - Update category
-- `DELETE /api/categories/[id]` - Delete category
+### Budgets
+- Set monthly budgets by category
+- Track spending vs budget
+- Visual progress indicators
+- Budget alerts
 
-### Dashboard & Reports
-- `GET /api/dashboard/stats` - Get dashboard statistics
-- `GET /api/reports/monthly` - Generate monthly report
+### Goals
+- Create financial goals
+- Track progress
+- Set deadlines
+- Visual progress bars
 
-## Security
+### AI Reports
+- Monthly financial analysis
+- Spending pattern insights
+- Personalized recommendations
+- Automatic generation at month end
 
-- All API routes require authentication
-- Users can only access their own data
-- Passwords hashed with bcrypt
-- OAuth integration via NextAuth
-- HTTPS required in production
+## Keyboard Shortcuts
 
-## Development
-
-### Type Checking
-```bash
-npm run typecheck
-```
-
-### Building for Production
-```bash
-npm run build
-```
-
-### Linting
-```bash
-npm run lint
-```
-
-## Deployment
-
-This application can be deployed to:
-- **Vercel** (recommended for Next.js)
-- **Netlify**
-- **Railway**
-- Any Node.js hosting platform
-
-Ensure environment variables are configured in your deployment platform.
+- `Q` - Open quick add modal
+- `Ctrl/Cmd + Enter` - Submit forms
+- `Escape` - Close modals/go back
 
 ## Contributing
 
-Contributions are welcome! Please follow these guidelines:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License
+MIT License - see LICENSE file for details
 
 ## Support
 
-For support, please open an issue on GitHub.
-
----
-
-**Built with ❤️ for financial wellness**
+For issues and questions:
+- Check [SETUP.md](./SETUP.md) for setup help
+- Check [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for deployment help
+- Open an issue on GitHub

@@ -6,6 +6,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  // Optimize for Vercel
+  images: {
+    domains: ['img.clerk.com'],
+  },
 };
 
 module.exports = nextConfig;

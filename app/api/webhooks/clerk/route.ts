@@ -6,8 +6,10 @@ import { syncClerkUserToMongoDB } from '@/lib/clerk-helpers';
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
+  // Webhook is optional - users will be synced on-demand if webhook is not configured
   if (!WEBHOOK_SECRET) {
-    throw new Error('Please add WEBHOOK_SECRET from Clerk Dashboard to .env');
+    console.warn('WEBHOOK_SECRET not configured. Users will be synced on-demand.');
+    return new Response('Webhook not configured', { status: 200 });
   }
 
   // Get the headers
