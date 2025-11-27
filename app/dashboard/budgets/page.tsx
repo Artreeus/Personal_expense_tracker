@@ -11,9 +11,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { InlineLoader } from '@/components/ui/loader';
 import { Target, Plus, TrendingDown, AlertTriangle, CheckCircle, Trash2, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Category } from '@/lib/types';
+import { ButtonLoader } from '@/components/ui/loader';
 
 export default function BudgetsPage() {
   const { status } = useSession();
@@ -22,6 +24,7 @@ export default function BudgetsPage() {
   const [budgets, setBudgets] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<any>(null);
@@ -105,6 +108,7 @@ export default function BudgetsPage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const url = editingBudget 
         ? `/api/budgets/${editingBudget.id}`
@@ -146,6 +150,8 @@ export default function BudgetsPage() {
         title: 'Error',
         description: error.message || 'Failed to save budget',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -309,8 +315,15 @@ export default function BudgetsPage() {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full">
-                  {editingBudget ? 'Update Budget' : 'Create Budget'}
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <ButtonLoader className="mr-2" />
+                      {editingBudget ? 'Updating...' : 'Creating...'}
+                    </>
+                  ) : (
+                    editingBudget ? 'Update Budget' : 'Create Budget'
+                  )}
                 </Button>
               </form>
             </DialogContent>

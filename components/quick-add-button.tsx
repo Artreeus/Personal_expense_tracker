@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ButtonLoader } from '@/components/ui/loader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -267,7 +268,14 @@ export function QuickAddButton() {
 
             <div className="flex gap-2">
               <Button type="submit" className="flex-1" disabled={isLoading}>
-                {isLoading ? 'Adding...' : 'Add'}
+                {isLoading ? (
+                  <>
+                    <ButtonLoader className="mr-2" />
+                    Adding...
+                  </>
+                ) : (
+                  'Add'
+                )}
               </Button>
               <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
                 Cancel

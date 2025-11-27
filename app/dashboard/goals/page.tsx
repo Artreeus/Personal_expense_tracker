@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { InlineLoader, ButtonLoader } from '@/components/ui/loader';
 import { Target, Plus, TrendingUp, Sparkles, Trash2, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,6 +21,7 @@ export default function GoalsPage() {
   const { toast } = useToast();
   const [goals, setGoals] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<any>(null);
 
@@ -74,6 +76,7 @@ export default function GoalsPage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const url = editingGoal 
         ? `/api/goals/${editingGoal.id}`
@@ -121,6 +124,8 @@ export default function GoalsPage() {
         title: 'Error',
         description: error.message || 'Failed to save goal',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

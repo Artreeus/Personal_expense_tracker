@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Transaction, Category } from '@/lib/types';
 import { ArrowUpCircle, ArrowDownCircle, Search, Filter, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { InlineLoader, ButtonLoader } from '@/components/ui/loader';
 
 export default function TransactionsPage() {
   const { status } = useSession();

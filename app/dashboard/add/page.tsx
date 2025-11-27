@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Category } from '@/lib/types';
 import { ArrowUpCircle, ArrowDownCircle, Repeat, Clock } from 'lucide-react';
+import { ButtonLoader, InlineLoader } from '@/components/ui/loader';
 
 export default function AddTransactionPage() {
   const { data: session, status } = useSession();
@@ -191,7 +192,11 @@ export default function AddTransactionPage() {
     : filteredCategories;
 
   if (status === 'loading') {
-    return <DashboardLayout><div>Loading...</div></DashboardLayout>;
+    return (
+      <DashboardLayout>
+        <InlineLoader text="Loading transaction form..." />
+      </DashboardLayout>
+    );
   }
 
   return (
@@ -366,7 +371,14 @@ export default function AddTransactionPage() {
 
               <div className="flex gap-4">
                 <Button type="submit" className="flex-1 h-12 text-base" disabled={isLoading}>
-                  {isLoading ? 'Adding...' : 'Add Transaction'}
+                  {isLoading ? (
+                    <>
+                      <ButtonLoader className="mr-2" />
+                      Adding...
+                    </>
+                  ) : (
+                    'Add Transaction'
+                  )}
                 </Button>
                 <Button
                   type="button"
