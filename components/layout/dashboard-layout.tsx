@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { Sidebar } from './sidebar';
 import { MobileNav } from './mobile-nav';
 import { QuickAddButton } from '@/components/quick-add-button';
+import { PageTransitionLoader } from '@/components/page-transition-loader';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+      <PageTransitionLoader />
       <Sidebar />
       <div className="md:pl-64">
         <main className="container mx-auto p-4 md:p-8 pb-20 md:pb-8">
