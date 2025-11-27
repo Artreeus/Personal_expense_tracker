@@ -63,7 +63,7 @@ export function QuickAddButton() {
   };
 
   useEffect(() => {
-    if (!session) return;
+    if (!isSignedIn) return;
     
     // Keyboard shortcut: 'q' to open quick add
     const handleKeyPress = (e: KeyboardEvent) => {
