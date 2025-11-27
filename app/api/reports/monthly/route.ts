@@ -60,8 +60,8 @@ export async function GET(req: NextRequest) {
 
     const categoryMap = new Map();
     transactions.forEach((t: any) => {
-      const categoryName = t.category_id && typeof t.category_id === 'object' 
-        ? t.category_id.name 
+      const categoryName = t.category_id && typeof t.category_id === 'object' && 'name' in t.category_id
+        ? (t.category_id as any).name 
         : 'Uncategorized';
       if (!categoryMap.has(categoryName)) {
         categoryMap.set(categoryName, { amount: 0, count: 0, type: t.type });
@@ -92,13 +92,15 @@ export async function GET(req: NextRequest) {
       user_id: t.user_id,
       type: t.type,
       amount: t.amount,
-      category_id: t.category_id?._id?.toString() || t.category_id,
-      category: t.category_id && typeof t.category_id === 'object' ? {
-        id: t.category_id._id.toString(),
-        name: t.category_id.name,
-        type: t.category_id.type,
-        icon: t.category_id.icon,
-        color: t.category_id.color,
+      category_id: t.category_id && typeof t.category_id === 'object' && '_id' in t.category_id 
+        ? (t.category_id as any)._id.toString() 
+        : (typeof t.category_id === 'string' ? t.category_id : null),
+      category: t.category_id && typeof t.category_id === 'object' && '_id' in t.category_id ? {
+        id: (t.category_id as any)._id.toString(),
+        name: (t.category_id as any).name,
+        type: (t.category_id as any).type,
+        icon: (t.category_id as any).icon,
+        color: (t.category_id as any).color,
       } : null,
       note: t.note,
       transaction_date: t.transaction_date,

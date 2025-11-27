@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface ICategory extends Document {
-  _id: string;
   user_id: string;
   name: string;
   type: 'income' | 'expense';

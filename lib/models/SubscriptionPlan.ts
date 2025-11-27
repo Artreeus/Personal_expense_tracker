@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface ISubscriptionPlan extends Document {
-  _id: string;
   name: string;
   price: number;
   features: string[];

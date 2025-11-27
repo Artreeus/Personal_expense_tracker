@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Loader } from '@/components/ui/loader';
 
 let loadingTimeout: NodeJS.Timeout | null = null;
 
-export function NavigationLoader() {
+function NavigationLoaderContent() {
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -38,6 +38,14 @@ export function NavigationLoader() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <Loader size="lg" text="Loading..." />
     </div>
+  );
+}
+
+export function NavigationLoader() {
+  return (
+    <Suspense fallback={null}>
+      <NavigationLoaderContent />
+    </Suspense>
   );
 }
 

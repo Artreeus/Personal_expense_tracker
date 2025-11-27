@@ -67,13 +67,15 @@ export async function GET(req: NextRequest) {
       user_id: t.user_id,
       type: t.type,
       amount: t.amount,
-      category_id: t.category_id?._id?.toString() || t.category_id,
-      category: t.category_id && typeof t.category_id === 'object' ? {
-        id: t.category_id._id.toString(),
-        name: t.category_id.name,
-        type: t.category_id.type,
-        icon: t.category_id.icon,
-        color: t.category_id.color,
+      category_id: t.category_id && typeof t.category_id === 'object' && '_id' in t.category_id 
+        ? (t.category_id as any)._id.toString() 
+        : (typeof t.category_id === 'string' ? t.category_id : null),
+      category: t.category_id && typeof t.category_id === 'object' && '_id' in t.category_id ? {
+        id: (t.category_id as any)._id.toString(),
+        name: (t.category_id as any).name,
+        type: (t.category_id as any).type,
+        icon: (t.category_id as any).icon,
+        color: (t.category_id as any).color,
       } : null,
       note: t.note,
       transaction_date: t.transaction_date,
@@ -149,12 +151,12 @@ export async function POST(req: NextRequest) {
       .populate('category_id', 'name type icon color')
       .lean();
 
-    const category = populatedTransaction?.category_id && typeof populatedTransaction.category_id === 'object' ? {
-      id: populatedTransaction.category_id._id.toString(),
-      name: populatedTransaction.category_id.name,
-      type: populatedTransaction.category_id.type,
-      icon: populatedTransaction.category_id.icon,
-      color: populatedTransaction.category_id.color,
+    const category = populatedTransaction?.category_id && typeof populatedTransaction.category_id === 'object' && '_id' in populatedTransaction.category_id ? {
+      id: (populatedTransaction.category_id as any)._id.toString(),
+      name: (populatedTransaction.category_id as any).name,
+      type: (populatedTransaction.category_id as any).type,
+      icon: (populatedTransaction.category_id as any).icon,
+      color: (populatedTransaction.category_id as any).color,
     } : null;
 
     return NextResponse.json({

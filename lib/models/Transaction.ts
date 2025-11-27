@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface ITransaction extends Document {
-  _id: string;
   user_id: string;
   type: 'income' | 'expense';
   amount: number;

@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IGoal extends Document {
-  _id: string;
   user_id: string;
   name: string;
   target_amount: number;

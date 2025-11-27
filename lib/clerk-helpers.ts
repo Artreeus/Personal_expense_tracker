@@ -91,7 +91,7 @@ export async function getMongoUserIdFromClerk() {
       try {
         // Use clerkClient to fetch user data
         const { clerkClient } = await import('@clerk/nextjs/server');
-        const clerk = clerkClient();
+        const clerk = await clerkClient();
         const clerkUser = await clerk.users.getUser(clerkUserId);
         
         if (clerkUser) {

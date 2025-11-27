@@ -55,14 +55,23 @@ export async function GET(req: NextRequest) {
     });
 
     const budgetsWithSpending = budgets.map((budget: any) => {
-      const spent = categorySpending.get(budget.category_id?._id?.toString() || budget.category_id) || 0;
+      const categoryIdStr = budget.category_id && typeof budget.category_id === 'object' && '_id' in budget.category_id
+        ? (budget.category_id as any)._id.toString()
+        : (typeof budget.category_id === 'string' ? budget.category_id : '');
+      const spent = categorySpending.get(categoryIdStr) || 0;
       const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
 
       return {
         id: budget._id.toString(),
-        category_id: budget.category_id?._id?.toString() || budget.category_id,
-        category: budget.category_id?.name || 'Unknown',
-        color: budget.category_id?.color || '#3b82f6',
+        category_id: budget.category_id && typeof budget.category_id === 'object' && '_id' in budget.category_id
+          ? (budget.category_id as any)._id.toString()
+          : (typeof budget.category_id === 'string' ? budget.category_id : null),
+        category: budget.category_id && typeof budget.category_id === 'object' && 'name' in budget.category_id
+          ? (budget.category_id as any).name
+          : 'Unknown',
+        color: budget.category_id && typeof budget.category_id === 'object' && 'color' in budget.category_id
+          ? (budget.category_id as any).color
+          : '#3b82f6',
         amount: budget.amount,
         spent: spent,
         percentage: percentage,

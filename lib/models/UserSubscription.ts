@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IUserSubscription extends Document {
-  _id: string;
   user_id: string;
   plan_id: string;
   status: 'active' | 'cancelled' | 'expired';

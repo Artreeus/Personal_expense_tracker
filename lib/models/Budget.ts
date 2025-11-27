@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IBudget extends Document {
-  _id: string;
   user_id: string;
   category_id: string;
   amount: number;

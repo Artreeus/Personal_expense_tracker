@@ -32,6 +32,9 @@ async function connectDB() {
       bufferCommands: false,
     };
 
+    if (!MONGODB_URI) {
+      throw new Error('Please define the DATABASE_URL environment variable inside .env');
+    }
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       console.log('MongoDB connected successfully');
       return mongoose;

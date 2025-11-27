@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IAIReport extends Document {
-  _id: string;
   user_id: string;
   month: string; // Format: YYYY-MM
   report_content: string;

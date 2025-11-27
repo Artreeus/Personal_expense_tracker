@@ -39,12 +39,12 @@ export async function GET(
       );
     }
 
-    const category = transaction.category_id && typeof transaction.category_id === 'object' ? {
-      id: transaction.category_id._id.toString(),
-      name: transaction.category_id.name,
-      type: transaction.category_id.type,
-      icon: transaction.category_id.icon,
-      color: transaction.category_id.color,
+    const category = transaction.category_id && typeof transaction.category_id === 'object' && '_id' in transaction.category_id ? {
+      id: (transaction.category_id as any)._id.toString(),
+      name: (transaction.category_id as any).name,
+      type: (transaction.category_id as any).type,
+      icon: (transaction.category_id as any).icon,
+      color: (transaction.category_id as any).color,
     } : null;
 
     return NextResponse.json({
@@ -53,7 +53,7 @@ export async function GET(
         user_id: transaction.user_id,
         type: transaction.type,
         amount: transaction.amount,
-        category_id: transaction.category_id?._id?.toString() || transaction.category_id,
+        category_id: category?.id || (typeof transaction.category_id === 'string' ? transaction.category_id : null),
         category,
         note: transaction.note,
         transaction_date: transaction.transaction_date,
@@ -123,12 +123,12 @@ export async function PATCH(
       );
     }
 
-    const category = transaction.category_id && typeof transaction.category_id === 'object' ? {
-      id: transaction.category_id._id.toString(),
-      name: transaction.category_id.name,
-      type: transaction.category_id.type,
-      icon: transaction.category_id.icon,
-      color: transaction.category_id.color,
+    const category = transaction.category_id && typeof transaction.category_id === 'object' && '_id' in transaction.category_id ? {
+      id: (transaction.category_id as any)._id.toString(),
+      name: (transaction.category_id as any).name,
+      type: (transaction.category_id as any).type,
+      icon: (transaction.category_id as any).icon,
+      color: (transaction.category_id as any).color,
     } : null;
 
     return NextResponse.json({
@@ -137,7 +137,7 @@ export async function PATCH(
         user_id: transaction.user_id,
         type: transaction.type,
         amount: transaction.amount,
-        category_id: transaction.category_id?._id?.toString() || transaction.category_id,
+        category_id: category?.id || (typeof transaction.category_id === 'string' ? transaction.category_id : null),
         category,
         note: transaction.note,
         transaction_date: transaction.transaction_date,

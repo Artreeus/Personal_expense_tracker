@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Loader } from '@/components/ui/loader';
 
-export function RouteLoader() {
+function RouteLoaderContent() {
   const [loading, setLoading] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -61,6 +61,14 @@ export function RouteLoader() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <Loader size="lg" text="Loading page..." />
     </div>
+  );
+}
+
+export function RouteLoader() {
+  return (
+    <Suspense fallback={null}>
+      <RouteLoaderContent />
+    </Suspense>
   );
 }
 
