@@ -318,19 +318,21 @@ export default function AddTransactionPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {displayCategories.length > 0 ? (
-                      displayCategories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="h-3 w-3 rounded-full"
-                              style={{ backgroundColor: category.color || '#3b82f6' }}
-                            />
-                            {category.name}
-                          </div>
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="" disabled>No categories available</SelectItem>
+                    displayCategories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: category.color || '#3b82f6' }}
+                          />
+                          {category.name}
+                        </div>
+                      </SelectItem>
+                    ))
+                  ) : (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                        No categories available
+                      </div>
                     )}
                   </SelectContent>
                 </Select>
