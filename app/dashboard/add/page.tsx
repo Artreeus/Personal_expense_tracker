@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Category } from '@/lib/types';
-import { ArrowUpCircle, ArrowDownCircle, Repeat } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, Repeat, Clock } from 'lucide-react';
 
 export default function AddTransactionPage() {
   const { data: session, status } = useSession();
@@ -20,7 +20,9 @@ export default function AddTransactionPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [lastTransaction, setLastTransaction] = useState<any>(null);
+  const [recentCategories, setRecentCategories] = useState<Category[]>([]);
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const amountInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     type: 'expense' as 'income' | 'expense',
@@ -37,26 +39,67 @@ export default function AddTransactionPage() {
 
     if (status === 'authenticated') {
       fetchCategories();
-      loadLastTransaction();
+      fetchRecentTransactions();
     }
-  }, [status]);
+  }, [status, router]);
+
+  useEffect(() => {
+    // Auto-focus amount input when page loads
+    if (amountInputRef.current && status === 'authenticated') {
+      setTimeout(() => amountInputRef.current?.focus(), 100);
+    }
+
+    // Keyboard shortcuts
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + Enter to submit
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const form = document.querySelector('form');
+        if (form) {
+          form.requestSubmit();
+        }
+      }
+      // Escape to go back
+      if (e.key === 'Escape') {
+        router.back();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [status, router]);
 
   const fetchCategories = async () => {
     try {
       const res = await fetch('/api/categories');
       if (res.ok) {
         const data = await res.json();
-        setCategories(data.categories || []);
+        const allCategories = data.categories || [];
+        setCategories(allCategories);
+        
+        // Get recent categories
+        const recent = localStorage.getItem('recentCategories');
+        if (recent) {
+          const recentIds = JSON.parse(recent);
+          const recentCats = allCategories.filter((cat: Category) => 
+            recentIds.includes(cat.id) && cat.type === formData.type
+          );
+          setRecentCategories(recentCats);
+        }
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
   };
 
-  const loadLastTransaction = () => {
-    const saved = localStorage.getItem('lastTransaction');
-    if (saved) {
-      setLastTransaction(JSON.parse(saved));
+  const fetchRecentTransactions = async () => {
+    try {
+      const res = await fetch('/api/transactions?limit=5');
+      if (res.ok) {
+        const data = await res.json();
+        setRecentTransactions(data.transactions || []);
+      }
+    } catch (error) {
+      console.error('Error fetching recent transactions:', error);
     }
   };
 
@@ -88,7 +131,16 @@ export default function AddTransactionPage() {
         throw new Error('Failed to create transaction');
       }
 
-      const data = await res.json();
+      // Save to recent categories
+      if (formData.category_id) {
+        const recent = JSON.parse(localStorage.getItem('recentCategories') || '[]');
+        if (!recent.includes(formData.category_id)) {
+          recent.unshift(formData.category_id);
+          localStorage.setItem('recentCategories', JSON.stringify(recent.slice(0, 5)));
+        }
+      }
+
+      // Save last transaction
       localStorage.setItem('lastTransaction', JSON.stringify(formData));
 
       toast({
@@ -104,7 +156,11 @@ export default function AddTransactionPage() {
         transaction_date: new Date().toISOString().split('T')[0],
       });
 
-      setTimeout(() => router.push('/dashboard'), 500);
+      // Auto-focus amount for next entry
+      setTimeout(() => {
+        amountInputRef.current?.focus();
+        fetchRecentTransactions();
+      }, 100);
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -116,17 +172,23 @@ export default function AddTransactionPage() {
     }
   };
 
-  const repeatLastTransaction = () => {
-    if (lastTransaction) {
-      setFormData(lastTransaction);
-      toast({
-        title: 'Last transaction loaded',
-        description: 'You can edit and submit',
-      });
-    }
+  const repeatTransaction = (transaction: any) => {
+    setFormData({
+      type: transaction.type,
+      amount: transaction.amount.toString(),
+      category_id: transaction.category_id || '',
+      note: transaction.note || '',
+      transaction_date: new Date().toISOString().split('T')[0],
+    });
+    amountInputRef.current?.focus();
   };
 
+  const quickAmounts = [10, 20, 50, 100, 200, 500, 1000];
+
   const filteredCategories = categories.filter((cat) => cat.type === formData.type);
+  const displayCategories = recentCategories.length > 0 && formData.category_id === '' 
+    ? [...recentCategories, ...filteredCategories.filter(c => !recentCategories.find(rc => rc.id === c.id))]
+    : filteredCategories;
 
   if (status === 'loading') {
     return <DashboardLayout><div>Loading...</div></DashboardLayout>;
@@ -137,18 +199,43 @@ export default function AddTransactionPage() {
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Add Transaction</h1>
-          <p className="text-muted-foreground">Record your income or expense</p>
+          <p className="text-muted-foreground">Quickly record your income or expense</p>
         </div>
 
-        {lastTransaction && (
-          <Button
-            variant="outline"
-            onClick={repeatLastTransaction}
-            className="w-full"
-          >
-            <Repeat className="mr-2 h-4 w-4" />
-            Repeat Last Transaction
-          </Button>
+        {recentTransactions.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Recent Transactions
+              </CardTitle>
+              <CardDescription>Tap to repeat</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {recentTransactions.slice(0, 3).map((transaction) => (
+                  <Button
+                    key={transaction.id}
+                    variant="outline"
+                    className="w-full justify-between"
+                    onClick={() => repeatTransaction(transaction)}
+                  >
+                    <div className="flex items-center gap-2">
+                      {transaction.type === 'income' ? (
+                        <ArrowUpCircle className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <ArrowDownCircle className="h-4 w-4 text-red-600" />
+                      )}
+                      <span className="text-sm">
+                        {transaction.category?.name || 'Uncategorized'} - ${Number(transaction.amount).toFixed(2)}
+                      </span>
+                    </div>
+                    <Repeat className="h-4 w-4" />
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         <Card>
@@ -164,27 +251,34 @@ export default function AddTransactionPage() {
                   <Button
                     type="button"
                     variant={formData.type === 'income' ? 'default' : 'outline'}
-                    onClick={() => setFormData({ ...formData, type: 'income', category_id: '' })}
-                    className="w-full"
+                    onClick={() => {
+                      setFormData({ ...formData, type: 'income', category_id: '' });
+                      fetchCategories();
+                    }}
+                    className="w-full h-12 text-base"
                   >
-                    <ArrowUpCircle className="mr-2 h-4 w-4" />
+                    <ArrowUpCircle className="mr-2 h-5 w-5" />
                     Income
                   </Button>
                   <Button
                     type="button"
                     variant={formData.type === 'expense' ? 'default' : 'outline'}
-                    onClick={() => setFormData({ ...formData, type: 'expense', category_id: '' })}
-                    className="w-full"
+                    onClick={() => {
+                      setFormData({ ...formData, type: 'expense', category_id: '' });
+                      fetchCategories();
+                    }}
+                    className="w-full h-12 text-base"
                   >
-                    <ArrowDownCircle className="mr-2 h-4 w-4" />
+                    <ArrowDownCircle className="mr-2 h-5 w-5" />
                     Expense
                   </Button>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">Amount *</Label>
                 <Input
+                  ref={amountInputRef}
                   id="amount"
                   type="number"
                   step="0.01"
@@ -193,7 +287,24 @@ export default function AddTransactionPage() {
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   required
                   disabled={isLoading}
+                  className="text-2xl h-14"
                 />
+                <div className="flex flex-wrap gap-2">
+                  {quickAmounts.map((amount) => (
+                    <Button
+                      key={amount}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setFormData({ ...formData, amount: amount.toString() });
+                        amountInputRef.current?.focus();
+                      }}
+                    >
+                      ${amount}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -202,15 +313,25 @@ export default function AddTransactionPage() {
                   value={formData.category_id}
                   onValueChange={(value) => setFormData({ ...formData, category_id: value })}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
+                  <SelectTrigger id="category" className="h-12">
+                    <SelectValue placeholder="Select a category (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    {filteredCategories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
+                    {displayCategories.length > 0 ? (
+                      displayCategories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="h-3 w-3 rounded-full"
+                              style={{ backgroundColor: category.color || '#3b82f6' }}
+                            />
+                            {category.name}
+                          </div>
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>No categories available</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -224,6 +345,7 @@ export default function AddTransactionPage() {
                   onChange={(e) => setFormData({ ...formData, transaction_date: e.target.value })}
                   required
                   disabled={isLoading}
+                  className="h-12"
                 />
               </div>
 
@@ -235,12 +357,13 @@ export default function AddTransactionPage() {
                   value={formData.note}
                   onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                   disabled={isLoading}
-                  rows={3}
+                  rows={2}
+                  className="resize-none"
                 />
               </div>
 
               <div className="flex gap-4">
-                <Button type="submit" className="flex-1" disabled={isLoading}>
+                <Button type="submit" className="flex-1 h-12 text-base" disabled={isLoading}>
                   {isLoading ? 'Adding...' : 'Add Transaction'}
                 </Button>
                 <Button
@@ -248,6 +371,7 @@ export default function AddTransactionPage() {
                   variant="outline"
                   onClick={() => router.back()}
                   disabled={isLoading}
+                  className="h-12"
                 >
                   Cancel
                 </Button>

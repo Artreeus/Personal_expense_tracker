@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { ArrowUpCircle, ArrowDownCircle, TrendingUp, Wallet } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, TrendingUp, Wallet, Plus } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Transaction } from '@/lib/types';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [stats, setStats] = useState<any>(null);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [trendData, setTrendData] = useState<any[]>([]);
@@ -112,9 +114,19 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, {session?.user?.name || 'User'}!</p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground">Welcome back, {session?.user?.name || 'User'}!</p>
+          </div>
+          <Button 
+            onClick={() => router.push('/dashboard/add')}
+            className="w-full sm:w-auto"
+            size="lg"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Quick Add
+          </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -226,18 +238,34 @@ export default function DashboardPage() {
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Transactions</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">Press 'Q' for quick add</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/dashboard/transactions')}
+            >
+              View All
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {recentTransactions.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No transactions yet</p>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">No transactions yet</p>
+                  <Button onClick={() => router.push('/dashboard/add')}>
+                    Add Your First Transaction
+                  </Button>
+                </div>
               ) : (
                 recentTransactions.map((transaction) => (
                   <div
                     key={transaction.id}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-lg border"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-lg border hover:bg-accent transition-colors cursor-pointer"
+                    onClick={() => router.push('/dashboard/transactions')}
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div

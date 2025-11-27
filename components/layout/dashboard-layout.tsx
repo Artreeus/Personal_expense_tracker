@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import { Sidebar } from './sidebar';
 import { MobileNav } from './mobile-nav';
+import { QuickAddButton } from '@/components/quick-add-button';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -18,6 +19,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </main>
       </div>
       <MobileNav />
+      <QuickAddButton />
     </div>
   );
 }
