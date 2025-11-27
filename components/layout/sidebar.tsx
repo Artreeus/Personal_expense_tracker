@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, PlusCircle, FileText, Settings, Tag, Wallet, Target, TrendingUp } from 'lucide-react';
+import { Home, PlusCircle, FileText, Settings, Tag, Wallet, Target, TrendingUp, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Sidebar() {
@@ -15,6 +15,7 @@ export function Sidebar() {
     { href: '/dashboard/goals', label: 'Goals', icon: TrendingUp },
     { href: '/dashboard/categories', label: 'Categories', icon: Tag },
     { href: '/dashboard/reports', label: 'Reports', icon: FileText },
+    { href: '/dashboard/ai-reports', label: 'AI Analysis', icon: Sparkles },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
   ];
 
