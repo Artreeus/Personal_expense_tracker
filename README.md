@@ -1,4 +1,4 @@
-# Finance Tracker - Personal Finance Management SaaS
+1# Finance Tracker - Personal Finance Management SaaS
 
 A modern, full-featured personal finance management application built with Next.js 15, MongoDB, and Clerk authentication.
 
